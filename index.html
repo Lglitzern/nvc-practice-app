@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resonance — NVC Practice Space</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Raleway:wght@800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'Hanken Grotesk', system-ui, sans-serif; background: #f6f2ee; color: #3c352d; -webkit-font-smoothing: antialiased; }
+    textarea, button, input { font-family: inherit; }
+    textarea::placeholder { color: #b3a99c; }
+    ::selection { background: #e0a87e66; }
+    button { cursor: pointer; }
+
+    @keyframes nvcFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes nodeIn { from { opacity: 0; transform: translate(-50%,-50%) scale(.8); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+    @keyframes micPulse { 0% { box-shadow: 0 0 0 0 rgba(196,116,79,.40); } 70% { box-shadow: 0 0 0 22px rgba(196,116,79,0); } 100% { box-shadow: 0 0 0 0 rgba(196,116,79,0); } }
+
+    .page { display: none; animation: nvcFade .5s ease both; }
+    .page.active { display: block; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 16px clamp(18px,4vw,42px);
+      background: rgba(246,242,238,0.82); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(60,53,45,0.08);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: inherit; }
+    .logo-dot { width: 34px; height: 34px; border-radius: 50%; background: #c4744f; display: flex; align-items: center; justify-content: center; }
+    .logo-dot-inner { width: 13px; height: 13px; border-radius: 50%; border: 2.5px solid #f6f2ee; }
+    .logo-text-main { font-weight: 800; font-size: 16px; letter-spacing: -0.01em; line-height: 1; }
+    .logo-text-sub { font-size: 11px; color: #8c8276; font-weight: 600; letter-spacing: 0.02em; }
+    nav { display: flex; gap: 6px; background: #efe8df; padding: 5px; border-radius: 14px; }
+    nav button {
+      border: none; font-weight: 700; font-size: 14px; padding: 9px 18px; border-radius: 10px;
+      transition: all .2s ease; background: transparent; color: #8c8276; box-shadow: none;
+    }
+    nav button.active { background: #fffdfa; color: #c4744f; box-shadow: 0 3px 10px rgba(60,53,45,0.10); }
+
+    /* Shared layout */
+    main { max-width: 920px; margin: 0 auto; padding: clamp(28px,5vw,64px) clamp(18px,4vw,32px) 80px; }
+    main.wide { max-width: 1240px; }
+    main.gratitude-main { max-width: 1100px; }
+
+    footer {
+      max-width: 720px; margin: 0 auto; padding: 8px clamp(18px,4vw,32px) 56px;
+      text-align: center; font-size: 13px; line-height: 1.7; color: #a89e90; text-wrap: pretty;
+    }
+
+    /* Cards */
+    .card {
+      background: #fffdfa; border: 1px solid rgba(60,53,45,0.08);
+      border-radius: 24px; padding: clamp(22px,3vw,30px);
+      box-shadow: 0 18px 50px -30px rgba(60,53,45,0.28);
+    }
+    .card-sm { border-radius: 22px; padding: 24px; }
+
+    /* Step badge */
+    .step-badge {
+      width: 26px; height: 26px; border-radius: 8px;
+      color: #fff; font-weight: 800; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-badge.orange { background: #c4744f; }
+    .step-badge.green { background: #6f9b86; }
+
+    /* Wheel */
+    .wheel-wrap { position: relative; width: 340px; height: 340px; max-width: 100%; margin: 6px auto; overflow: visible; }
+    .wheel-ring {
+      position: absolute; left: 50%; top: 50%; border-radius: 50%;
+      transform: translate(-50%,-50%); pointer-events: none;
+    }
+    .wheel-center {
+      position: absolute; left: 50%; top: 50%; width: 108px; height: 108px;
+      border-radius: 50%; transform: translate(-50%,-50%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 8px; z-index: 2; pointer-events: none;
+    }
+    .wheel-node {
+      position: absolute; transform: translate(-50%,-50%);
+      padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+      line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
+      transition: all .2s ease; z-index: 3;
+    }
+    .wheel-sub {
+      position: absolute; transform: translate(-50%,-50%);
+      padding: 6px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
+      line-height: 1; cursor: pointer; user-select: none; white-space: nowrap;
+      transition: all .18s ease; z-index: 4;
+      animation: nodeIn .25s ease both;
+      box-shadow: 0 3px 11px rgba(60,53,45,0.10);
+    }
+
+    /* Blueprint */
+    .blueprint {
+      background: linear-gradient(160deg,#3c352d,#2c2721); color: #f6f2ee;
+      border-radius: 24px; padding: clamp(22px,3vw,30px);
+      box-shadow: 0 22px 50px -26px rgba(60,53,45,0.6);
+    }
+
+    /* Request chips */
+    .request-chip {
+      text-align: left; font-size: 14.5px; line-height: 1.45;
+      padding: 13px 16px; border-radius: 14px; transition: all .18s ease;
+      background: #fffdfa; color: #3c352d; border: 1.5px solid rgba(60,53,45,0.10);
+      width: 100%;
+    }
+    .request-chip.active { background: #fbf1e8; font-weight: 700; border-color: #e0a87e; box-shadow: 0 8px 20px -10px rgba(196,116,79,0.5); }
+
+    /* Chip pills */
+    .chip-pill {
+      border: none; padding: 9px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+      transition: all .18s ease; background: #f1ebe3; color: #5a5249;
+    }
+    .chip-pill.active { background: #c4744f; color: #fff; }
+    .chip-pill.green.active { background: #6f9b86; color: #fff; }
+
+    /* Warning banner */
+    .warning-banner {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: #fbf1e8; border: 1px solid #e9c9ad; border-radius: 18px;
+      padding: 18px 22px; margin-top: 36px; max-width: 920px;
+    }
+    .warning-icon {
+      flex: none; width: 34px; height: 34px; border-radius: 10px; background: #e0a87e;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 18px;
+    }
+
+    /* Mic button */
+    .mic-btn {
+      width: 46px; height: 46px; border-radius: 50%; border: none; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #f1ebe3; color: #c4744f; transition: all .2s;
+    }
+    .mic-btn.recording { background: #c4744f; color: #fff; animation: micPulse 1.2s ease-out infinite; }
+
+    /* Segmented control */
+    .seg-wrap { display: inline-flex; background: #f1ebe3; padding: 5px; border-radius: 14px; margin-bottom: 26px; }
+    .seg-btn {
+      border: none; font-weight: 700; font-size: 15px; padding: 10px 26px;
+      border-radius: 10px; transition: all .2s ease; background: transparent; color: #8c8276;
+    }
+    .seg-btn.active { background: #3c352d; color: #fbf7f1; }
+
+    /* Two col layout */
+    .two-col { display: flex; gap: clamp(20px,3vw,32px); flex-wrap: wrap; align-items: stretch; }
+    .col-left { flex: 1 1 360px; min-width: 300px; }
+    .col-right { flex: 1 1 460px; min-width: 320px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* Giraffe/Jackal character */
+    .character { position: relative; width: 120px; height: 144px; flex-shrink: 0; }
+
+    /* Gratitude card */
+    .g-card {
+      background: linear-gradient(160deg,#7d9b8a,#5f7d6c); color: #fff;
+      border-radius: 26px; padding: clamp(26px,3.5vw,38px);
+      box-shadow: 0 26px 56px -26px rgba(95,125,108,0.7);
+      position: relative; overflow: hidden;
+    }
+    .g-card::before {
+      content: ''; position: absolute; right: -40px; top: -40px;
+      width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.08);
+    }
+
+    .copy-btn {
+      margin-top: 22px; padding: 12px 22px; border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 12px; background: transparent; color: #fff; font-weight: 700; font-size: 14px;
+      transition: all .2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.15); }
+    .copy-btn.copied { background: rgba(255,255,255,0.2); border-color: transparent; }
+
+    /* Highlight spans in blueprint */
+    .hi-filled { color: #fff; padding: 2px 11px; border-radius: 8px; font-weight: 700; white-space: nowrap; }
+    .hi-empty { color: #c9beb0; border-bottom: 2px dotted rgba(246,242,238,0.4); font-style: italic; opacity: 0.8; }
+
+    /* Rate limit quota badge */
+    .quota-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: #8c8276;
+      padding: 5px 11px; border-radius: 999px;
+      background: #f1ebe3; border: 1px solid rgba(60,53,45,0.10);
+      transition: all .3s ease;
+    }
+    .quota-badge.low { color: #c4744f; background: #fdf0e8; border-color: rgba(196,116,79,0.25); }
+    .quota-badge.exhausted { color: #a84f30; background: #fde8de; border-color: rgba(196,116,79,0.40); }
+    .quota-pip {
+      display: flex; gap: 3px; align-items: center;
+    }
+    .quota-pip span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(60,53,45,0.15); transition: background .3s;
+    }
+    .quota-pip span.used { background: #c4744f; }
+    .quota-pip span.low { background: #e09a60; }
+
+    /* Rate limit blocked overlay */
+    .limit-overlay {
+      position: absolute; inset: 0; border-radius: inherit;
+      background: rgba(246,242,238,0.96);
+      backdrop-filter: blur(6px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 28px; z-index: 20;
+      animation: nvcFade .35s ease both;
+    }
+    .limit-overlay-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg,#e8c49e,#c4744f);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 16px;
+      box-shadow: 0 8px 24px -8px rgba(196,116,79,0.5);
+    }
+    .limit-overlay h3 {
+      font-size: 16px; font-weight: 800; color: #3c352d;
+      letter-spacing: -0.01em; margin-bottom: 10px; line-height: 1.3;
+    }
+    .limit-overlay p {
+      font-size: 13.5px; line-height: 1.6; color: #6a6258; max-width: 32ch;
+    }
+    .limit-overlay .reset-hint {
+      margin-top: 16px; font-size: 12px; font-weight: 700;
+      color: #a39a8d; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    /* Reflect button loading state */
+    .reflect-btn { transition: all .2s ease; }
+    .reflect-btn.loading { opacity: 0.7; pointer-events: none; }
+    .reflect-btn.loading::after { content: ' ⟳'; display: inline-block; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" onclick="setView('intro')">
+    <div class="logo-dot"><div class="logo-dot-inner"></div></div>
+    <div>
+      <div class="logo-text-main">Resonance</div>
+      <div class="logo-text-sub">NVC practice space</div>
+    </div>
+  </a>
+  <nav>
+    <button id="nav-intro" class="active" onclick="setView('intro')">Intro</button>
+    <button id="nav-feedback" onclick="setView('feedback')">Giving Feedback</button>
+    <button id="nav-gratitude" onclick="setView('gratitude')">Expressing Gratitude</button>
+  </nav>
+</header>
+
+<!-- INTRO PAGE -->
+<div id="page-intro" class="page active">
+  <main>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:#c4744f;font-weight:700;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:44px;">— WELCOME TO NONVIOLENT COMMUNICATION —</div>
+    <h1 style="font-size:clamp(38px,7vw,68px);line-height:1.02;letter-spacing:-0.03em;font-weight:800;margin:0 auto 22px;max-width:14ch;text-align:center;font-family:Raleway,sans-serif;">What is alive in you?</h1>
+    <p style="font-size:clamp(17px,2.4vw,21px);line-height:1.3;color:#6a6258;max-width:54ch;margin:0 auto 40px;text-align:center;">Underneath every hard conversation sits a feeling and an unmet need. This is a quiet place to translate reactivity into honest, connecting language — one sentence at a time.</p>
+
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;">
+      <h2 style="font-size:clamp(24px,3.4vw,32px);font-weight:800;letter-spacing:-0.02em;">Two voices, one situation</h2>
+      <button onclick="nextExample()" style="background:none;border:1px solid rgba(60,53,45,0.18);color:#6a6258;font-weight:600;font-size:13.5px;padding:8px 16px;border-radius:999px;">Next situation →</button>
+    </div>
+
+    <div class="card" style="border-radius:26px;">
+      <div style="font-size:13px;font-weight:600;color:#8c8276;margin-bottom:18px;">Situation · <span id="jg-situation"></span></div>
+      <div class="seg-wrap">
+        <button class="seg-btn active" id="seg-jackal" onclick="setJgMode('jackal')">Jackal</button>
+        <button class="seg-btn" id="seg-giraffe" onclick="setJgMode('giraffe')">Giraffe</button>
+      </div>
+      <div style="display:flex;gap:clamp(20px,4vw,42px);align-items:center;flex-wrap:wrap;">
+        <div class="character" id="character-wrap"></div>
+        <div style="flex:1;min-width:240px;">
+          <div id="jg-phrase" style="font-size:clamp(20px,3vw,27px);line-height:1.4;font-weight:600;letter-spacing:-0.01em;text-wrap:pretty;"></div>
+          <div id="jg-caption" style="margin-top:20px;font-size:14px;line-height:1.5;color:#8c8276;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- FEEDBACK PAGE -->
+<div id="page-feedback" class="page">
+  <main class="wide">
+    <div style="margin-bottom:8px;color:#c4744f;font-weight:700;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;">Transform mode</div>
+    <h1 style="font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;margin:0 0 28px;">From reaction to request</h1>
+
+    <div class="two-col">
+      <!-- LEFT: vent -->
+      <section class="col-left card" style="display:flex;flex-direction:column;position:relative;">
+        <div id="feedback-limit-overlay"></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="step-badge orange">1</span>
+          <span style="font-size:19px;font-weight:800;letter-spacing:-0.01em;">Let it out</span>
+        </div>
+        <div style="font-size:14px;color:#8c8276;margin:4px 0 18px;">Say it however it actually feels. Raw and unfiltered is welcome here.</div>
+        <textarea id="vent-text" placeholder="Type what's on your mind… don't filter it."
+          oninput="onVentInput(this.value)"
+          style="width:100%;flex:1;min-height:200px;resize:vertical;border:1.5px solid rgba(60,53,45,0.12);border-radius:16px;padding:16px;font-size:16px;line-height:1.55;color:#3c352d;background:#fbf7f1;outline:none;"></textarea>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px;">
+          <div id="feedback-quota" class="quota-badge">
+            <div class="quota-pip" id="feedback-quota-pips"></div>
+            <span id="feedback-quota-text">Practices remaining today: 10/10</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;margin-top:16px;">
+          <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="Voice (simulated)">
+            <div style="width:14px;height:22px;border-radius:7px;background:currentColor;"></div>
+          </button>
+          <div id="mic-label" style="font-size:13.5px;color:#8c8276;">Tap to speak</div>
+        </div>
+
+        <button id="reflect-btn" onclick="reflect()" class="reflect-btn" style="margin-top:22px;width:100%;background:#c4744f;color:#fff;border:none;border-radius:14px;padding:15px;font-size:15.5px;font-weight:700;box-shadow:0 12px 26px -12px rgba(196,116,79,0.8);">Reflect my words →</button>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="col-right">
+        <!-- Feelings Wheel -->
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="step-badge orange">2</span>
+            <span style="font-size:17px;font-weight:800;">Wheel of Feelings</span>
+          </div>
+          <div style="font-size:13px;color:#8c8276;margin-bottom:8px;">Tap a core feeling, then the nuance underneath.</div>
+          <div class="wheel-wrap" id="feel-wheel">
+            <div class="wheel-ring" style="width:276px;height:276px;border:1.5px dashed rgba(196,116,79,0.22);"></div>
+            <div class="wheel-ring" style="width:160px;height:160px;border:1.5px solid rgba(196,116,79,0.16);"></div>
+            <div class="wheel-center" style="background:#fbf1e8;border:1.5px solid rgba(196,116,79,0.25);">
+              <div id="feel-center-text" style="font-size:13px;font-weight:800;color:#c4744f;line-height:1.05;letter-spacing:-0.01em;">How do you feel?</div>
+              <div id="feel-center-sub" style="font-size:10.5px;color:#a39a8d;margin-top:3px;font-weight:600;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Needs Wheel -->
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="step-badge green">3</span>
+            <span style="font-size:17px;font-weight:800;">Wheel of Needs</span>
+          </div>
+          <div style="font-size:13px;color:#8c8276;margin-bottom:8px;">Every feeling points to a universal need.</div>
+          <div class="wheel-wrap" id="need-wheel">
+            <div class="wheel-ring" style="width:276px;height:276px;border:1.5px dashed rgba(111,155,134,0.24);"></div>
+            <div class="wheel-ring" style="width:160px;height:160px;border:1.5px solid rgba(111,155,134,0.18);"></div>
+            <div class="wheel-center" style="background:#eef3ee;border:1.5px solid rgba(111,155,134,0.28);">
+              <div id="need-center-text" style="font-size:13px;font-weight:800;color:#5f7d6c;line-height:1.05;letter-spacing:-0.01em;">What do you need?</div>
+              <div id="need-center-sub" style="font-size:10.5px;color:#a39a8d;margin-top:3px;font-weight:600;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blueprint -->
+        <div class="blueprint">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#e0a87e;">Your NVC blueprint</div>
+            <div id="progress-dots" style="display:flex;gap:7px;"></div>
+          </div>
+          <div style="font-size:clamp(18px,2.6vw,23px);line-height:1.65;font-weight:500;text-wrap:pretty;">
+            When <span id="obs-display"></span>, I feel <span id="feel-display"></span>, because I have a need for <span id="need-display"></span>.
+          </div>
+          <div id="request-display" style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(246,242,238,0.14);font-size:clamp(16px,2.2vw,20px);line-height:1.6;color:#f0e6da;"></div>
+        </div>
+
+        <!-- Request chips -->
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#6a6258;margin-bottom:12px;">Suggested requests · pick one to complete the blueprint</div>
+          <div id="request-chips" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="warning-banner">
+      <div class="warning-icon">!</div>
+      <div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px;">Keep it anonymous — this is a sandbox.</div>
+        <div style="font-size:14px;line-height:1.5;color:#7a7065;">Please don't enter real names, identities, addresses, account numbers, or financial details. Speak about <em>your</em> experience, not identifying specifics about other people.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- GRATITUDE PAGE -->
+<div id="page-gratitude" class="page">
+  <main class="gratitude-main">
+    <div style="margin-bottom:8px;color:#6f9b86;font-weight:700;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;">Gratitude mode</div>
+    <h1 style="font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;margin:0 0 6px;">Celebrate a moment of connection</h1>
+    <p style="font-size:16px;color:#6a6258;margin:0 0 30px;max-width:56ch;">NVC gratitude has three parts: name what someone <em>did</em>, how it <em>landed</em> in you, and the <em>need</em> it met. No flattery — just the honest impact.</p>
+
+    <div style="display:flex;gap:clamp(20px,3vw,32px);flex-wrap:wrap;align-items:flex-start;">
+      <!-- LEFT inputs -->
+      <section style="flex:1 1 380px;min-width:300px;display:flex;flex-direction:column;gap:22px;">
+        <!-- Action -->
+        <div class="card card-sm" style="position:relative;">
+          <div id="gratitude-limit-overlay"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span class="step-badge green">1</span>
+            <span style="font-size:16px;font-weight:800;">The action</span>
+          </div>
+          <div style="font-size:13px;color:#8c8276;margin:0 0 14px 36px;">An observable thing they did — not a label like "you're kind."</div>
+          <textarea id="g-action" placeholder="e.g. stayed on the call with me until midnight"
+            oninput="onGActionInput(this.value)"
+            style="width:100%;min-height:84px;resize:vertical;border:1.5px solid rgba(60,53,45,0.12);border-radius:14px;padding:14px;font-size:15.5px;line-height:1.5;color:#3c352d;background:#fbf7f1;outline:none;"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px;">
+            <div id="gratitude-quota" class="quota-badge">
+              <div class="quota-pip" id="gratitude-quota-pips"></div>
+              <span id="gratitude-quota-text">Practices remaining today: 10/10</span>
+            </div>
+            <button id="analyze-btn" onclick="analyzeGratitude()" class="reflect-btn" style="background:#6f9b86;color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13.5px;font-weight:700;box-shadow:0 8px 18px -10px rgba(111,155,134,0.7);">Suggest feeling &amp; need →</button>
+          </div>
+        </div>
+
+        <!-- Feeling chips -->
+        <div class="card card-sm">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <span class="step-badge orange">2</span>
+            <span style="font-size:16px;font-weight:800;">The feeling it stirred</span>
+          </div>
+          <div id="g-feel-chips" style="display:flex;flex-wrap:wrap;gap:9px;"></div>
+        </div>
+
+        <!-- Need chips -->
+        <div class="card card-sm">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <span class="step-badge green">3</span>
+            <span style="font-size:16px;font-weight:800;">The need it met</span>
+          </div>
+          <div id="g-need-chips" style="display:flex;flex-wrap:wrap;gap:9px;"></div>
+        </div>
+      </section>
+
+      <!-- RIGHT card -->
+      <section style="flex:1 1 380px;min-width:300px;position:sticky;top:96px;">
+        <div class="g-card">
+          <div style="font-size:12.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;opacity:0.8;margin-bottom:20px;">Gratitude card</div>
+          <div style="font-size:clamp(21px,3vw,28px);line-height:1.5;font-weight:600;letter-spacing:-0.01em;text-wrap:pretty;">
+            When you <span id="g-act-display"></span>, I feel <span id="g-feel-display"></span> — it met my deep need for <span id="g-need-display"></span>.
+          </div>
+          <button class="copy-btn" id="copy-btn" onclick="copyGratitude()">Copy to clipboard</button>
+        </div>
+        <p style="text-align:center;font-size:12.5px;color:#a39a8d;margin-top:16px;">Read it aloud, or send it to someone who'd love to hear it.</p>
+      </section>
+    </div>
+
+    <div class="warning-banner">
+      <div class="warning-icon">!</div>
+      <div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:3px;">Keep it anonymous — this is a sandbox.</div>
+        <div style="font-size:14px;line-height:1.5;color:#7a7065;">Please don't enter real names, identities, addresses, account numbers, or financial details. Speak about <em>your</em> experience, not identifying specifics about other people.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>Made with a mission to bridge the gap between NVC theory and real life. This is your personal sandbox to untangle raw thoughts, decode core emotions, and practice the language of needs.</footer>
+
+<script>
+// ─── Rate Limiter ─────────────────────────────────────────────────────────────
+const DAILY_LIMIT = 10;
+const STORAGE_KEY = 'nvc_daily_usage';
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function getUsage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.date === todayStr()) return parsed;
+    }
+  } catch (_) {}
+  return { date: todayStr(), count: 0 };
+}
+
+function saveUsage(usage) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
+}
+
+function incrementUsage() {
+  const usage = getUsage();
+  usage.count += 1;
+  saveUsage(usage);
+  renderQuotaBadges();
+}
+
+function remaining() {
+  return Math.max(0, DAILY_LIMIT - getUsage().count);
+}
+
+function isLimitReached() {
+  return getUsage().count >= DAILY_LIMIT;
+}
+
+function renderQuotaBadges() {
+  ['feedback', 'gratitude'].forEach(id => renderQuotaBadge(id));
+  renderLimitOverlays();
+}
+
+function renderQuotaBadge(id) {
+  const rem = remaining();
+  const used = DAILY_LIMIT - rem;
+  const badge = document.getElementById(id + '-quota');
+  const text = document.getElementById(id + '-quota-text');
+  const pips = document.getElementById(id + '-quota-pips');
+  if (!badge) return;
+
+  text.textContent = `Practices remaining today: ${rem}/${DAILY_LIMIT}`;
+  badge.className = 'quota-badge' + (rem === 0 ? ' exhausted' : rem <= 3 ? ' low' : '');
+
+  // Render 10 small pips
+  pips.innerHTML = Array.from({ length: DAILY_LIMIT }, (_, i) => {
+    const cls = i < used ? (rem <= 3 ? 'used low' : 'used') : '';
+    return `<span class="${cls}"></span>`;
+  }).join('');
+}
+
+function renderLimitOverlays() {
+  ['feedback', 'gratitude'].forEach(id => {
+    const el = document.getElementById(id + '-limit-overlay');
+    if (!el) return;
+    if (isLimitReached()) {
+      el.className = 'limit-overlay';
+      el.innerHTML = `
+        <div class="limit-overlay-icon">🌱</div>
+        <h3>You've reached your 10 free daily practice sessions</h3>
+        <p>Take some time to sit with your insights, and come back tomorrow to keep growing your emotional literacy.</p>
+        <div class="reset-hint">Resets at midnight · ${todayStr()}</div>`;
+    } else {
+      el.className = '';
+      el.innerHTML = '';
+    }
+  });
+}
+
+// ─── Gemini API ───────────────────────────────────────────────────────────────
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+async function callGemini(prompt) {
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0.4 }
+    })
+  });
+  if (!res.ok) throw new Error('API error ' + res.status);
+  const data = await res.json();
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  return JSON.parse(raw);
+}
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+const JG = [
+  { situation: 'A partner scrolling while you talk',
+    jackal: "You never listen to me. You only care about that phone.",
+    giraffe: "When I'm sharing something and the scrolling keeps going, I feel lonely — I really need to feel heard." },
+  { situation: 'A teammate who missed the deadline again',
+    jackal: "You always drop the ball. This whole thing is a mess.",
+    giraffe: "When the deadline passed with no update, I felt anxious, because I need reliability to plan my own work." },
+  { situation: 'A friend who cancelled last minute',
+    jackal: "You're so flaky. You obviously don't care about me.",
+    giraffe: "When plans change at the last minute, I feel disappointed — I have a need for connection and a bit of ease." },
+];
+
+const FEELINGS = [
+  { id:'joyful',   label:'Joyful',   color:'#d9a566', subs:['Excited','Hopeful','Grateful','Inspired'] },
+  { id:'peaceful', label:'Peaceful', color:'#9bb39f', subs:['Calm','Content','Relaxed','Centered'] },
+  { id:'loving',   label:'Loving',   color:'#cf8a92', subs:['Warm','Tender','Open','Affectionate'] },
+  { id:'sad',      label:'Sad',      color:'#9a92a8', subs:['Lonely','Let down','Heavy','Discouraged'] },
+  { id:'scared',   label:'Scared',   color:'#b6a07e', subs:['Anxious','Worried','Nervous','Uneasy'] },
+  { id:'angry',    label:'Angry',    color:'#c4744f', subs:['Frustrated','Irritated','Resentful','Annoyed'] },
+  { id:'confused', label:'Confused', color:'#b09b86', subs:['Torn','Hesitant','Lost','Conflicted'] },
+];
+
+const NEEDS = [
+  { id:'connection', label:'Connection', color:'#6f9b86', subs:['Belonging','Empathy','Closeness','To matter'] },
+  { id:'autonomy',   label:'Autonomy',   color:'#7d9bb0', subs:['Choice','Freedom','Space','Independence'] },
+  { id:'meaning',    label:'Meaning',    color:'#8a9b6f', subs:['Purpose','Growth','Clarity','To give'] },
+  { id:'safety',     label:'Safety',     color:'#6f8f9b', subs:['Trust','Security','Stability','Steadiness'] },
+  { id:'honesty',    label:'Honesty',    color:'#98a87d', subs:['Authenticity','Openness','Integrity','Realness'] },
+  { id:'wellbeing',  label:'Wellbeing',  color:'#88a89a', subs:['Rest','Ease','Support','Nourishment'] },
+  { id:'play',       label:'Play',       color:'#a0a86f', subs:['Joy','Spontaneity','Humor','Adventure'] },
+];
+
+const REQUESTS_BY_NEED = {
+  connection: ["Would you be willing to spend ten minutes talking, just the two of us?","Could we check in with each other once a day this week?","Would you tell me what you heard me say?"],
+  autonomy:   ["Would you be open to letting me decide how I handle this?","Could I have a day to think before we continue?","Would you ask me first before making plans for me?"],
+  meaning:    ["Could we talk about what this is really for?","Would you share what matters most to you here?","Can we name one goal we both believe in?"],
+  safety:     ["Would you let me know in advance when plans change?","Could we agree on what we can each count on?","Would you be willing to keep this between us?"],
+  honesty:    ["Would you tell me directly what you're feeling?","Could we agree to say the hard things kindly?","Would you share what you really need from me?"],
+  wellbeing:  ["Would you be willing to take this off my plate today?","Could we pause and pick it up after a break?","Would you help me with just this one piece?"],
+  play:       ["Could we do something light together this weekend?","Would you be up for trying a gentler approach?","Can we take a break and laugh about this later?"],
+};
+
+const G_FEELS = ['Grateful','Touched','Joyful','Warm','Relieved','Inspired','Moved','Seen','Content'];
+const SAMPLE_TEXT = "I keep asking for updates on the launch and hear nothing back for days. It feels like I'm being ignored and I'm dreading every standup now.";
+
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  view: 'intro',
+  jgMode: 'jackal', jgIndex: 0,
+  ventText: '', micOn: false,
+  coreF: null, leafF: null,
+  coreN: null, leafN: null,
+  request: null,
+  gAction: '', gFeel: null, gNeed: null, gCopied: false,
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function polar(r, deg) {
+  const a = (deg - 90) * Math.PI / 180;
+  return { x: 170 + r * Math.cos(a), y: 170 + r * Math.sin(a) };
+}
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function setView(v) {
+  state.view = v;
+  ['intro','feedback','gratitude'].forEach(n => {
+    document.getElementById('page-' + n).classList.toggle('active', n === v);
+    document.getElementById('nav-' + n).classList.toggle('active', n === v);
+  });
+  window.scrollTo(0, 0);
+}
+
+// ─── Intro ───────────────────────────────────────────────────────────────────
+function renderIntro() {
+  const ex = JG[state.jgIndex];
+  const isGiraffe = state.jgMode === 'giraffe';
+  document.getElementById('jg-situation').textContent = ex.situation;
+  document.getElementById('jg-phrase').textContent = '"' + (isGiraffe ? ex.giraffe : ex.jackal) + '"';
+  document.getElementById('jg-phrase').style.color = isGiraffe ? '#5f7d6c' : '#b06a4a';
+  document.getElementById('jg-caption').textContent = isGiraffe
+    ? 'Giraffe — the language of feelings, needs and a gentle request. Long neck, big heart, sees far.'
+    : 'Jackal — the reflex of judgment, blame and demand. Not bad, just a need wearing armor.';
+  document.getElementById('seg-jackal').classList.toggle('active', !isGiraffe);
+  document.getElementById('seg-giraffe').classList.toggle('active', isGiraffe);
+  renderCharacter();
+}
+
+function renderCharacter() {
+  const wrap = document.getElementById('character-wrap');
+  if (state.jgMode === 'giraffe') {
+    wrap.innerHTML = `
+      <div style="position:absolute;left:42px;top:8px;width:5px;height:24px;background:#b98f4e;border-radius:3px;"></div>
+      <div style="position:absolute;left:38px;top:0;width:12px;height:12px;background:#7c623a;border-radius:50%;"></div>
+      <div style="position:absolute;left:73px;top:8px;width:5px;height:24px;background:#b98f4e;border-radius:3px;"></div>
+      <div style="position:absolute;left:69px;top:0;width:12px;height:12px;background:#7c623a;border-radius:50%;"></div>
+      <div style="position:absolute;left:6px;top:40px;width:32px;height:19px;background:#d9a566;border-radius:50%;transform:rotate(-22deg);"></div>
+      <div style="position:absolute;left:82px;top:40px;width:32px;height:19px;background:#d9a566;border-radius:50%;transform:rotate(22deg);"></div>
+      <div style="position:absolute;left:30px;top:30px;width:60px;height:100px;background:#e3b06d;border-radius:34px 34px 28px 28px;"></div>
+      <div style="position:absolute;left:38px;top:96px;width:44px;height:36px;background:#f0d3a4;border-radius:24px;"></div>
+      <div style="position:absolute;left:40px;top:46px;width:12px;height:12px;background:#cf9a55;border-radius:50%;"></div>
+      <div style="position:absolute;left:66px;top:58px;width:9px;height:9px;background:#cf9a55;border-radius:50%;"></div>
+      <div style="position:absolute;left:44px;top:70px;width:9px;height:9px;background:#4a3c28;border-radius:50%;"></div>
+      <div style="position:absolute;left:67px;top:70px;width:9px;height:9px;background:#4a3c28;border-radius:50%;"></div>
+      <div style="position:absolute;left:51px;top:110px;width:5px;height:5px;background:#caa06b;border-radius:50%;"></div>
+      <div style="position:absolute;left:64px;top:110px;width:5px;height:5px;background:#caa06b;border-radius:50%;"></div>`;
+  } else {
+    wrap.innerHTML = `
+      <div style="position:absolute;left:22px;top:10px;width:34px;height:48px;background:#9aa1a8;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(-12deg);"></div>
+      <div style="position:absolute;left:64px;top:10px;width:34px;height:48px;background:#9aa1a8;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(12deg);"></div>
+      <div style="position:absolute;left:30px;top:24px;width:20px;height:30px;background:#c2c7cc;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(-12deg);"></div>
+      <div style="position:absolute;left:70px;top:24px;width:20px;height:30px;background:#c2c7cc;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(12deg);"></div>
+      <div style="position:absolute;left:26px;top:40px;width:68px;height:76px;background:#aab0b6;border-radius:50% 50% 46% 46%;"></div>
+      <div style="position:absolute;left:44px;top:88px;width:32px;height:46px;background:#c2c7cc;border-radius:38% 38% 50% 50%;"></div>
+      <div style="position:absolute;left:39px;top:66px;width:13px;height:6px;background:#3a3f44;border-radius:3px;transform:rotate(13deg);"></div>
+      <div style="position:absolute;left:68px;top:66px;width:13px;height:6px;background:#3a3f44;border-radius:3px;transform:rotate(-13deg);"></div>
+      <div style="position:absolute;left:53px;top:100px;width:14px;height:10px;background:#3a3f44;border-radius:50%;"></div>`;
+  }
+}
+
+function nextExample() {
+  state.jgIndex = (state.jgIndex + 1) % JG.length;
+  renderIntro();
+}
+
+function setJgMode(m) {
+  state.jgMode = m;
+  renderIntro();
+}
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+function onVentInput(v) { state.ventText = v; renderBlueprint(); }
+
+function toggleMic() {
+  if (state.micOn) { state.micOn = false; renderMic(); return; }
+  state.micOn = true; renderMic();
+  setTimeout(() => {
+    state.micOn = false;
+    if (!state.ventText.trim()) {
+      state.ventText = SAMPLE_TEXT;
+      document.getElementById('vent-text').value = SAMPLE_TEXT;
+    }
+    renderMic(); renderBlueprint();
+  }, 1700);
+}
+
+function renderMic() {
+  const btn = document.getElementById('mic-btn');
+  const lbl = document.getElementById('mic-label');
+  btn.classList.toggle('recording', state.micOn);
+  lbl.textContent = state.micOn ? 'Listening…' : 'Tap to speak';
+}
+
+async function reflect() {
+  if (isLimitReached()) { renderLimitOverlays(); return; }
+
+  const text = state.ventText.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('reflect-btn');
+  btn.classList.add('loading');
+  btn.textContent = 'Reflecting…';
+
+  const feelingIds = FEELINGS.map(f => f.id).join(', ');
+  const feelingSubs = FEELINGS.map(f => `${f.id}: [${f.subs.join(', ')}]`).join('; ');
+  const needIds = NEEDS.map(n => n.id).join(', ');
+  const needSubs = NEEDS.map(n => `${n.id}: [${n.subs.join(', ')}]`).join('; ');
+
+  const prompt = `You are an NVC (Nonviolent Communication) coach. Analyze this raw emotional expression and identify the core feeling and unmet need using ONLY the provided vocabulary.
+
+Text: "${text}"
+
+Available feeling categories: ${feelingIds}
+Feeling sub-options per category: ${feelingSubs}
+
+Available need categories: ${needIds}
+Need sub-options per category: ${needSubs}
+
+Respond with a JSON object (no markdown) with exactly these fields:
+- "coreF": one of the feeling category ids
+- "leafF": one of the sub-options for that category
+- "coreN": one of the need category ids
+- "leafN": one of the sub-options for that category
+- "reason": one sentence explaining why (max 120 chars)`;
+
+  try {
+    const result = await callGemini(prompt);
+    // Validate the response matches our vocabulary
+    const coreF = FEELINGS.find(f => f.id === result.coreF);
+    const leafF = coreF?.subs.includes(result.leafF) ? result.leafF : coreF?.subs[0];
+    const coreN = NEEDS.find(n => n.id === result.coreN);
+    const leafN = coreN?.subs.includes(result.leafN) ? result.leafN : coreN?.subs[0];
+
+    if (coreF && coreN) {
+      state.coreF = coreF.id;
+      state.leafF = { category: coreF.id, label: leafF };
+      state.coreN = coreN.id;
+      state.leafN = { category: coreN.id, label: leafN };
+      state.request = null;
+      // Only increment after successful 200 OK response
+      incrementUsage();
+      renderFeedback();
+    }
+  } catch (err) {
+    console.error('Gemini error:', err);
+    // Fallback: don't penalise, just surface a gentle error
+    btn.textContent = 'Try again →';
+    btn.classList.remove('loading');
+    setTimeout(() => { btn.textContent = 'Reflect my words →'; }, 2500);
+    return;
+  }
+
+  btn.classList.remove('loading');
+  btn.textContent = 'Reflect my words →';
+}
+
+async function analyzeGratitude() {
+  if (isLimitReached()) { renderLimitOverlays(); return; }
+
+  const text = state.gAction.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('analyze-btn');
+  btn.classList.add('loading');
+  btn.textContent = 'Analyzing…';
+
+  const feelList = G_FEELS.join(', ');
+  const needList = NEEDS.map(n => n.label).join(', ');
+
+  const prompt = `You are an NVC (Nonviolent Communication) coach. Someone is expressing gratitude for this action: "${text}"
+
+Choose the most fitting feeling and need from ONLY these options:
+Feelings: ${feelList}
+Needs: ${needList}
+
+Respond with a JSON object (no markdown) with exactly these fields:
+- "feel": one item from the Feelings list (exact match, case-sensitive)
+- "need": one item from the Needs list (exact match, case-sensitive)`;
+
+  try {
+    const result = await callGemini(prompt);
+    const feel = G_FEELS.includes(result.feel) ? result.feel : null;
+    const need = NEEDS.find(n => n.label === result.need)?.label || null;
+
+    if (feel) { state.gFeel = feel; }
+    if (need) { state.gNeed = need; }
+
+    incrementUsage();
+    renderGratitudePage();
+  } catch (err) {
+    console.error('Gemini error:', err);
+    btn.textContent = 'Try again →';
+    btn.classList.remove('loading');
+    setTimeout(() => { btn.textContent = 'Suggest feeling & need →'; }, 2500);
+    return;
+  }
+
+  btn.classList.remove('loading');
+  btn.textContent = 'Suggest feeling & need →';
+}
+
+function renderWheel(containerId, items, openId, leaf, kind) {
+  const container = document.getElementById(containerId);
+  // Remove old nodes (not the rings or center)
+  container.querySelectorAll('.wheel-node,.wheel-sub').forEach(el => el.remove());
+
+  const n = items.length;
+  const coreR = 80, subR = 138;
+
+  items.forEach((it, i) => {
+    const ang = i * (360 / n);
+    const p = polar(coreR, ang);
+    const active = openId === it.id || (leaf && leaf.category === it.id);
+
+    const el = document.createElement('div');
+    el.className = 'wheel-node';
+    el.textContent = it.label;
+    el.style.left = p.x + 'px';
+    el.style.top = p.y + 'px';
+    el.style.background = active ? it.color : '#fff';
+    el.style.color = active ? '#fff' : '#5a5249';
+    el.style.border = '1.5px solid ' + (active ? it.color : 'rgba(60,53,45,0.12)');
+    el.style.boxShadow = active ? '0 8px 18px rgba(60,53,45,0.20)' : '0 2px 7px rgba(60,53,45,0.07)';
+    el.onclick = () => {
+      if (kind === 'f') {
+        state.coreF = state.coreF === it.id ? null : it.id;
+        if (state.leafF && state.leafF.category !== state.coreF) state.leafF = null;
+      } else {
+        state.coreN = state.coreN === it.id ? null : it.id;
+        if (state.leafN && state.leafN.category !== state.coreN) state.leafN = null;
+      }
+      renderFeedback();
+    };
+    container.appendChild(el);
+  });
+
+  const idx = items.findIndex(x => x.id === openId);
+  if (idx >= 0) {
+    const cat = items[idx];
+    const baseAng = idx * (360 / n);
+    const m = cat.subs.length;
+    cat.subs.forEach((label, j) => {
+      const ang = baseAng + (j - (m - 1) / 2) * 17;
+      const p = polar(subR, ang);
+      const active = leaf && leaf.category === openId && leaf.label === label;
+
+      const el = document.createElement('div');
+      el.className = 'wheel-sub';
+      el.textContent = label;
+      el.style.left = p.x + 'px';
+      el.style.top = p.y + 'px';
+      el.style.background = active ? cat.color : 'rgba(255,255,255,0.97)';
+      el.style.color = active ? '#fff' : '#6a6258';
+      el.style.border = '1.5px dashed ' + (active ? cat.color : cat.color + '99');
+      el.onclick = () => {
+        if (kind === 'f') state.leafF = { category: openId, label };
+        else state.leafN = { category: openId, label };
+        renderFeedback();
+      };
+      container.appendChild(el);
+    });
+  }
+}
+
+function renderBlueprint() {
+  const obs = state.ventText.trim();
+  const obsDisplay = obs ? (obs.length > 92 ? obs.slice(0, 92) + '…' : obs) : null;
+  const feelDisplay = state.leafF ? state.leafF.label.toLowerCase() : null;
+  const needDisplay = state.leafN ? state.leafN.label.toLowerCase() : null;
+
+  function hiSpan(text, filled, bg) {
+    if (filled) return `<span class="hi-filled" style="background:${bg}">${text}</span>`;
+    return `<span class="hi-empty">${text}</span>`;
+  }
+
+  document.getElementById('obs-display').outerHTML = hiSpan(obsDisplay || 'what happened', !!obsDisplay, '#7a6a5a');
+  document.getElementById('feel-display').outerHTML = hiSpan(feelDisplay || 'how you feel', !!feelDisplay, '#c4744f');
+  document.getElementById('need-display').outerHTML = hiSpan(needDisplay || 'what you need', !!needDisplay, '#6f9b86');
+
+  // Reassign after outerHTML replacement
+  document.querySelector('#page-feedback .blueprint div:nth-child(2)').innerHTML =
+    `When ${hiSpan(obsDisplay || 'what happened', !!obsDisplay, '#7a6a5a')}, I feel ${hiSpan(feelDisplay || 'how you feel', !!feelDisplay, '#c4744f')}, because I have a need for ${hiSpan(needDisplay || 'what you need', !!needDisplay, '#6f9b86')}.`;
+
+  const reqEl = document.getElementById('request-display');
+  reqEl.textContent = state.request || 'Would you be willing to… (pick a request below)';
+
+  // Progress dots
+  const dots = [
+    { label: 'Observation', done: !!obs },
+    { label: 'Feeling', done: !!state.leafF },
+    { label: 'Need', done: !!state.leafN },
+    { label: 'Request', done: !!state.request },
+  ];
+  document.getElementById('progress-dots').innerHTML = dots.map(d =>
+    `<div title="${d.label}" style="width:9px;height:9px;border-radius:50%;background:${d.done ? '#e0a87e' : 'rgba(246,242,238,0.22)'};transition:all .2s;"></div>`
+  ).join('');
+}
+
+function renderRequestChips() {
+  const reqCat = (state.leafN && state.leafN.category) || state.coreN || 'connection';
+  const chipList = REQUESTS_BY_NEED[reqCat] || REQUESTS_BY_NEED.connection;
+  const container = document.getElementById('request-chips');
+  container.innerHTML = chipList.map(text => {
+    const active = state.request === text;
+    return `<button class="request-chip${active?' active':''}" onclick="selectRequest(this,'${text.replace(/'/g,"\\'")}');">${text}</button>`;
+  }).join('');
+}
+
+function selectRequest(btn, text) {
+  state.request = text;
+  renderFeedback();
+}
+
+function renderFeedback() {
+  renderWheel('feel-wheel', FEELINGS, state.coreF, state.leafF, 'f');
+  renderWheel('need-wheel', NEEDS, state.coreN, state.leafN, 'n');
+
+  // Wheel centers
+  const feelCenter = state.leafF ? state.leafF.label : (state.coreF ? cap(FEELINGS.find(x=>x.id===state.coreF).label) : 'How do you feel?');
+  const feelSub = state.leafF ? cap(FEELINGS.find(x=>x.id===state.coreF)?.label || '') : (state.coreF ? 'tap to refine' : '');
+  const needCenter = state.leafN ? state.leafN.label : (state.coreN ? cap(NEEDS.find(x=>x.id===state.coreN).label) : 'What do you need?');
+  const needSub = state.leafN ? cap(NEEDS.find(x=>x.id===state.coreN)?.label || '') : (state.coreN ? 'tap to refine' : '');
+
+  const feelEl = document.getElementById('feel-center-text');
+  feelEl.textContent = feelCenter;
+  feelEl.style.fontSize = feelCenter.length > 10 ? '11px' : '13px';
+  document.getElementById('feel-center-sub').textContent = feelSub;
+
+  const needEl = document.getElementById('need-center-text');
+  needEl.textContent = needCenter;
+  needEl.style.fontSize = needCenter.length > 10 ? '11px' : '13px';
+  document.getElementById('need-center-sub').textContent = needSub;
+
+  renderBlueprint();
+  renderRequestChips();
+}
+
+// ─── Gratitude ────────────────────────────────────────────────────────────────
+function onGActionInput(v) {
+  state.gAction = v;
+  renderGratitudeCard();
+}
+
+function renderGFeelChips() {
+  document.getElementById('g-feel-chips').innerHTML = G_FEELS.map(label => {
+    const active = state.gFeel === label;
+    return `<button class="chip-pill${active?' active':''}" onclick="selectGFeel('${label}')">${label}</button>`;
+  }).join('');
+}
+
+function renderGNeedChips() {
+  document.getElementById('g-need-chips').innerHTML = NEEDS.map(it => {
+    const active = state.gNeed === it.label;
+    return `<button class="chip-pill green${active?' active':''}" onclick="selectGNeed('${it.label}')">${it.label}</button>`;
+  }).join('');
+}
+
+function selectGFeel(label) {
+  state.gFeel = state.gFeel === label ? null : label;
+  renderGratitudePage();
+}
+
+function selectGNeed(label) {
+  state.gNeed = state.gNeed === label ? null : label;
+  renderGratitudePage();
+}
+
+function renderGratitudeCard() {
+  const actText = state.gAction.trim() || null;
+  const feelText = state.gFeel ? state.gFeel.toLowerCase() : null;
+  const needText = state.gNeed ? state.gNeed.toLowerCase() : null;
+
+  function hi(text, filled) {
+    if (filled) return `<span style="font-style:normal;font-weight:700;text-decoration:underline;text-decoration-color:rgba(255,255,255,0.5);text-underline-offset:3px;">${text}</span>`;
+    return `<span style="opacity:0.45;font-style:italic;">${text}</span>`;
+  }
+
+  document.querySelector('.g-card > div:nth-child(2)').innerHTML =
+    `When you ${hi(actText || '[their action]', !!actText)}, I feel ${hi(feelText || '[feeling]', !!feelText)} — it met my deep need for ${hi(needText || '[need]', !!needText)}.`;
+}
+
+function renderGratitudePage() {
+  renderGFeelChips();
+  renderGNeedChips();
+  renderGratitudeCard();
+}
+
+function copyGratitude() {
+  const a = state.gAction.trim() || '[their action]';
+  const f = state.gFeel ? state.gFeel.toLowerCase() : '[feeling]';
+  const n = state.gNeed ? state.gNeed.toLowerCase() : '[need]';
+  const text = `When you ${a}, I feel ${f} — it met my deep need for ${n}.`;
+  try { navigator.clipboard && navigator.clipboard.writeText(text); } catch(e) {}
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = 'Copied ✓';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy to clipboard'; btn.classList.remove('copied'); }, 1800);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderIntro();
+renderFeedback();
+renderGratitudePage();
+renderQuotaBadges();
+</script>
+</body>
+</html>
