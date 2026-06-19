@@ -459,7 +459,7 @@
 
 <footer>Made with a mission to bridge the gap between NVC theory and real life. This is your personal sandbox to untangle raw thoughts, decode core emotions, and practice the language of needs.</footer>
 
-<script>
+<script type="module">
 // ─── Rate Limiter ─────────────────────────────────────────────────────────────
 const DAILY_LIMIT = 10;
 const STORAGE_KEY = 'nvc_daily_usage';
@@ -540,7 +540,7 @@ function renderLimitOverlays() {
 }
 
 // ─── Gemini API ───────────────────────────────────────────────────────────────
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_KEY;
+const GEMINI_KEY = import.meta.env?.VITE_GEMINI_KEY;
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
 async function callGemini(prompt) {
@@ -1024,6 +1024,15 @@ renderIntro();
 renderFeedback();
 renderGratitudePage();
 renderQuotaBadges();
+
+// Expose all inline-handler functions to global scope (required for type="module")
+Object.assign(window, {
+  setView, nextExample, setJgMode,
+  toggleMic, reflect, analyzeGratitude,
+  onVentInput, onGActionInput,
+  selectRequest, selectGFeel, selectGNeed,
+  copyGratitude,
+});
 </script>
 </body>
 </html>
